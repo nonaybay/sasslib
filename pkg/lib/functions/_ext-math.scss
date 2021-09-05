@@ -1,0 +1,23 @@
+@use 'sass:math';
+
+
+
+@function nnb-round($value, $decimal: 8, $direction: 'auto') {
+  $exponent: math.pow(10, $decimal);
+  $value: ($value * $exponent);
+  $if-up: math.ceil($value);
+  $if-down: math.floor($value);
+  $if-auto: math.round($value);
+
+  @if ($direction == 'up') {
+    $value: math.div($if-up, $exponent);
+  } @else if ($direction == 'down') {
+    $value: math.div($if-down, $exponent);
+  } @else if ($direction == 'auto') {
+    $value: math.div($if-auto, $exponent);
+  } @else {
+    @return nnb-round($value, $decimal, 'auto');
+  }
+
+  @return $value;
+}
