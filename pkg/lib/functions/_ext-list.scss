@@ -1,0 +1,27 @@
+@use 'sass:list';
+
+
+
+// This functions helps you remove duplicates from any list
+@function nnb-list-remove-duplicates($list, $recursive: false) {
+  // Create an empty list.
+  $result: ();
+
+  // Reads item by item.
+  @each $item in $list {
+    // Conditional: Only pass if the item in question does not have an index
+    //  value in the list ($result).
+    @if not list.index($result, $item) {
+      // Conditional: if the item is an item, that is, it is not null or empty
+      //  and recursive option is true.
+      @if ((list.length($item) > 1) and $recursive) {
+        $_temp: nnb-list-remove-duplicates($item, $recursive);
+        $result: list.append($result, $_temp, 'comma');
+      } @else {
+        $result: list.append($result, $item, 'comma');
+      }
+    }
+  }
+
+  @return $result;
+}
