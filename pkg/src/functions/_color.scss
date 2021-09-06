@@ -157,3 +157,15 @@
 
   @return $foreground;
 }
+
+@function local-websafe-color($value) {
+  @return (math.round(math.div($value, variable.$rgb) * 5) * 51);
+}
+
+@function websafe-color($color) {
+  $r: local-websafe-color(get-red($color));
+  $g: local-websafe-color(get-green($color));
+  $b: local-websafe-color(get-blue($color));
+
+  @return rgb($r, $g, $b);
+}
