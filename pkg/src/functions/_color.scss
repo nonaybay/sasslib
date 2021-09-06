@@ -157,8 +157,3 @@
 
   @return $foreground;
 }
-
-
-$color: rgb(242, 242, 247);
-
-@debug a11y-color($color, $color, 'AA', 16, false, true);
