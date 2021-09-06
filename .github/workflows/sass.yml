@@ -16,9 +16,11 @@ jobs:
         with:
           name: artifact
           path: |
-            pkg
+            /
+            !.github
+            !.git
       - name: Archive code
         uses: actions/upload-artifact@v2
         with:
           name: code-coverage-report
-          path: .output/test/cc.log
+          path: /
