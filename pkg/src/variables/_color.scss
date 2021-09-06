@@ -1,22 +1,29 @@
 @use 'sass:math';
 
 
+$use-alternatives: false;
+
+$gamma-dividend: if($use-alternatives, 11, 12); // 2.2, 2.4
+$gamma-divisor: 5;
+$alpha-dividend: 211;
+$alpha-divisor: 200;
 
 $rgb: 255;
-$gamma: 2.4;
-$alpha: 1.055;
-$mgamma: 1.4;
-$malpha: 0.055;
+$gamma: math.div($gamma-dividend, $gamma-divisor);
+$alpha: math.div($alpha-dividend, $alpha-divisor);
+$mgamma: ($gamma - 1);
+$malpha: ($alpha - 1);
 $beta-delta: math.div($malpha, $mgamma);
-$delta-dividend-a: math.pow($alpha, $gamma);
-$delta-dividend-b: math.pow($mgamma, $mgamma);
-$delta-divisor-a: math.pow($malpha, $mgamma);
-$delta-divisor-b: math.pow($gamma, $gamma);
-$delta-dividend: ($delta-dividend-a * $delta-dividend-b);
-$delta-divisor: ($delta-divisor-a * $delta-divisor-b);
+
+$delta-dividend: (math.pow($alpha, $gamma) * math.pow($mgamma, $mgamma));
+$delta-divisor: (math.pow($malpha, $mgamma) * math.pow($gamma, $gamma));
+
 $delta: math.div($delta-dividend, $delta-divisor);
 $beta: math.div($beta-delta, $delta);
 $contrast-hack: 0.05;
-$xyz-r: 0.21263900587151027;
-$xyz-g: 0.715168678767756;
-$xyz-b: 0.07219231536073371;
+
+$yr: if($use-alternatives, 0.2289745640697488, 0.21263900587151027);
+$yg: if($use-alternatives, 0.2289745640697488, 0.715168678767756);
+$yb: if($use-alternatives, 0.2289745640697488, 0.07219231536073371);
+$xb: if($use-alternatives, 0.1982172852343625, 0.1804807884018343); // use as luminance bridge
+// $xb: ($xb - 0.021519953340953885);

@@ -40,9 +40,9 @@
 
 @function get-luminance($color) {
   $linear: linear-srgb($color);
-  $r: (list.nth($linear, 1) * variable.$xyz-r);
-  $g: (list.nth($linear, 2) * variable.$xyz-g);
-  $b: (list.nth($linear, 3) * variable.$xyz-b);
+  $r: (list.nth($linear, 1) * variable.$yr);
+  $g: (list.nth($linear, 2) * variable.$yg);
+  $b: (list.nth($linear, 3) * variable.$yb);
 
   @return ($r + $g + $b);
 }
@@ -58,8 +58,7 @@
 
 @function get-tone($color) {
   $luminance: get-luminance($color);
-  $condition: ($luminance <= 0.1589608350608804);
-  $condition: ($luminance < variable.$xyz-r);
+  $condition: ($luminance < variable.$xb);
   $true: 'dark';
   $false: 'light';
 
@@ -73,9 +72,10 @@
   $ratio-c: 7;
 
   @if $forced {
-    $ratio-a: 7;
-    $ratio-b: 14;
-    $ratio-c: 21;
+    $x: math.div(21, $ratio-c);
+    $ratio-a: ($ratio-a * $x);
+    $ratio-b: ($ratio-b * $x);
+    $ratio-c: ($ratio-c * $x);
   }
 
   $ratio: $ratio-b;
@@ -107,7 +107,7 @@
   @return $ratio;
 }
 
-@function a11y-color($foreground, $background, $level: 'AAA', $size: 16, $bold: false, $forced: false) {
+@function a11y-color($foreground, $background, $level, $size, $bold, $forced) {
   
   $main-ratio: get-ratio($level, $size, $bold, $forced);
   $contrast: contrast-ratio($foreground, $background);
@@ -121,7 +121,7 @@
   } @else {
     $foreground-lod: get-tone($foreground);
     $background-lod: get-tone($background);
-    $step: 4%;
+    $step: 2%;
 
     $_c1: (($foreground-lod == 'light') and ($background-lod == 'light'));
     $_c2: (($foreground-lod == 'dark') and ($background-lod == 'light'));
@@ -130,17 +130,20 @@
       $step: ($step * -1);
     }
 
-    $step-sat: (math.div(math.abs($step), 2) * -1);
+    $step-sat: (math.div(math.abs($step), variable.$alpha) * -1);
     $step-lig: $step;
     
+    // $foreground: color.adjust($foreground, $saturation: $step-sat);
+    // $foreground: color.scale($foreground, $lightness: $step-lig);
     $foreground: color.scale($foreground, $saturation: $step-sat, $lightness: $step-lig);
 
-    @return a11y-color($foreground, $background, $level, $size, $bold);
+    @return a11y-color($foreground, $background, $level, $size, $bold, $forced);
   }
 
   @if $forced {
     @debug 'contrast is forced';
   }
+
   @debug 'ratio:                                                  #{$main-ratio}';
   @debug 'contrast:                                               #{$contrast}';
   @debug 'contrast if white on background:                        #{$white-on-bg}';
@@ -154,3 +157,8 @@
 
   @return $foreground;
 }
+
+
+$color: rgb(242, 242, 247);
+
+@debug a11y-color($color, $color, 'AA', 16, false, true);
