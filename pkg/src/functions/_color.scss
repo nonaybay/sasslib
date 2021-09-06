@@ -55,3 +55,102 @@
 
   @return math.div($max, $min);
 }
+
+@function get-tone($color) {
+  $luminance: get-luminance($color);
+  $condition: ($luminance <= 0.1589608350608804);
+  $condition: ($luminance < variable.$xyz-r);
+  $true: 'dark';
+  $false: 'light';
+
+  @return if($condition, $true, $false);
+}
+
+// https://codepen.io/jhogue/pen/jOEXxZe
+@function get-ratio($level: 'AA', $size: 16, $bold: false, $forced: false) {
+  $ratio-a: 3;
+  $ratio-b: 4.5;
+  $ratio-c: 7;
+
+  @if $forced {
+    $ratio-a: 7;
+    $ratio-b: 14;
+    $ratio-c: 21;
+  }
+
+  $ratio: $ratio-b;
+
+  @if ($level == 'A') {
+    $ratio: $ratio-a;
+  } @else if ($level == 'AA') {
+    $ratio: $ratio-b;
+  } @else if ($level == 'AAA') {
+    $ratio: $ratio-c;
+  }
+
+  @if ($size < 24) {
+    @if (($size >= 19) and $bold) {
+      @if ($level == 'AAA') {
+        $ratio: $ratio-b;
+      } @else {
+        $ratio: $ratio-a;
+      }
+    }
+  } @else {
+    $ratio: $ratio-a;
+
+    @if ($level == 'AAA') {
+      $ratio: $ratio-b;
+    }
+  }
+
+  @return $ratio;
+}
+
+@function a11y-color($foreground, $background, $level: 'AAA', $size: 16, $bold: false, $forced: true) {
+  
+  $main-ratio: get-ratio($level, $size, $bold, $forced);
+  $contrast: contrast-ratio($foreground, $background);
+  $white-on-bg: contrast-ratio(white, $background);
+  $black-on-bg: contrast-ratio(black, $background);
+  $compute-temp-min-contrast: math.max($white-on-bg, $black-on-bg);
+  $ratio: math.min($main-ratio, $compute-temp-min-contrast);
+
+  @if ($contrast >= $ratio) {
+    $foreground: $foreground;
+  } @else {
+    $foreground-lod: get-tone($foreground);
+    $background-lod: get-tone($background);
+    $step: 4%;
+
+    $_c1: (($foreground-lod == 'light') and ($background-lod == 'light'));
+    $_c2: (($foreground-lod == 'dark') and ($background-lod == 'light'));
+
+    @if ($_c1 or $_c2) {
+      $step: ($step * -1);
+    }
+
+    $step-sat: (math.div(math.abs($step), 2) * -1);
+    $step-lig: $step;
+    
+    $foreground: color.scale($foreground, $saturation: $step-sat, $lightness: $step-lig);
+
+    @return a11y-color($foreground, $background, $level, $size, $bold);
+  }
+
+  @if $forced {
+    @debug 'contrast is forced';
+  }
+  @debug 'ratio:                                                  #{$main-ratio}';
+  @debug 'contrast:                                               #{$contrast}';
+  @debug 'contrast if white on background:                        #{$white-on-bg}';
+  @debug 'contrast if black on background:                        #{$black-on-bg}';
+  @debug 'computed max contrast acceptable:                       #{$compute-temp-min-contrast}';
+  @debug 'ratio to be used, based on ratio and computed contrast: #{$ratio}';
+
+  @if ($ratio < $main-ratio) {
+    @debug 'pass, but contrast is not suficcient';
+  }
+
+  @return $foreground;
+}
