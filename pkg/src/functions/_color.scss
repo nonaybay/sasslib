@@ -1,0 +1,57 @@
+@use 'sass:color';
+@use 'sass:list';
+@use 'sass:math';
+
+@use '../variables/color' as variable;
+
+
+
+@function get-red($color) {
+  @return color.red($color);
+}
+
+@function get-green($color) {
+  @return color.green($color);
+}
+
+@function get-blue($color) {
+  @return color.blue($color);
+}
+
+// Put RGB value from range [0...255] to [0...1]
+@function local-linear-srgb($value) {
+  $value: math.div($value, variable.$rgb);
+  $sign: if(($value < 0), -1, 1);
+  $abs: math.abs($value);
+  $condition: ($abs <= variable.$beta-delta);
+  $true: math.div($value, variable.$delta);
+  $false: ($sign * math.pow(math.div(($abs + variable.$malpha), variable.$alpha), variable.$gamma));
+
+  @return if($condition, $true, $false);
+}
+
+@function linear-srgb($color) {
+  $r: local-linear-srgb(get-red($color));
+  $g: local-linear-srgb(get-green($color));
+  $b: local-linear-srgb(get-blue($color));
+
+  @return ($r, $g, $b);
+}
+
+@function get-luminance($color) {
+  $linear: linear-srgb($color);
+  $r: (list.nth($linear, 1) * variable.$xyz-r);
+  $g: (list.nth($linear, 2) * variable.$xyz-g);
+  $b: (list.nth($linear, 3) * variable.$xyz-b);
+
+  @return ($r + $g + $b);
+}
+
+@function contrast-ratio($color-a, $color-b) {
+  $luminance-a: get-luminance($color-a);
+  $luminance-b: get-luminance($color-b);
+  $max: (math.max($luminance-a, $luminance-b) + variable.$contrast-hack);
+  $min: (math.min($luminance-a, $luminance-b) + variable.$contrast-hack);
+
+  @return math.div($max, $min);
+}
