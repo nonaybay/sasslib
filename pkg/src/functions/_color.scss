@@ -107,7 +107,7 @@
   @return $ratio;
 }
 
-@function a11y-color($foreground, $background, $level: 'AAA', $size: 16, $bold: false, $forced: true) {
+@function a11y-color($foreground, $background, $level: 'AAA', $size: 16, $bold: false, $forced: false) {
   
   $main-ratio: get-ratio($level, $size, $bold, $forced);
   $contrast: contrast-ratio($foreground, $background);
