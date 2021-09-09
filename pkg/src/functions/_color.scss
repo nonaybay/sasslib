@@ -18,7 +18,6 @@
   @return color.blue($color);
 }
 
-// Put RGB value from range [0...255] to [0...1]
 @function local-linear-srgb($value) {
   $value: math.div($value, variable.$rgb);
   $sign: if(($value < 0), -1, 1);
